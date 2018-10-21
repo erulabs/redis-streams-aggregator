@@ -1,0 +1,44 @@
+version: '2'
+services:
+  postgres:
+    image: postgres:10
+    # build: inf/images/postgres
+    restart: on-failure
+    env_file:
+      - ./inf/env/${TARGET}/postgres.env.plain
+    ports:
+      - 5432
+  rabbitmq:
+    image: rabbitmq:management
+    restart: on-failure
+    ports:
+      - 5672
+      - 15672
+    env_file:
+      - ./inf/env/${TARGET}/rabbitmq.env.plain
+  redis:
+    image: redis
+    ports:
+      - 6379
+  api:
+    command: node service/api
+    image: '${DOCKER_CONTAINER_NAME}:${TAG}'
+    restart: on-failure
+    links:
+      - postgres
+      - redis
+      - rabbitmq
+    env_file:
+      - ./inf/env/${TARGET}/api.env.plain
+    ports:
+      - 4000
+  worker:
+    command: node service/worker
+    image: '${DOCKER_CONTAINER_NAME}:${TAG}'
+    restart: on-failure
+    links:
+      - postgres
+      - redis
+      - rabbitmq
+    env_file:
+      - ./inf/env/${TARGET}/worker.env.plain
