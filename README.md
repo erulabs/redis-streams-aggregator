@@ -9,7 +9,7 @@
   <a href="https://circleci.com/gh/erulabs/redis-streams-aggregator"><img src="https://img.shields.io/circleci/project/github/erulabs/redis-streams-aggregator.svg?style=for-the-badge" /></a>
   <img src="https://img.shields.io/npm/dt/redis-streams-aggregator.svg?style=for-the-badge" />
   <br /><br />
-  <img src="https://img.shields.io/github/release-date/SubtitleEdit/subtitleedit.svg?style=for-the-badge" />
+  <img src="https://img.shields.io/github/release-date/erulabs/redis-streams-aggregator.svg?style=for-the-badge" />
   <img src="https://img.shields.io/npm/l/redis-streams-aggregator.svg?style=for-the-badge" />
   <br /><br />
 </div>
