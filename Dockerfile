@@ -3,7 +3,7 @@ FROM node:10-alpine
 WORKDIR /app
 COPY package.json yarn.lock ./
 
-RUN yarn install --production && \
+RUN yarn install && \
     yarn cache clean && \
     rm -rf /var/cache/* /tmp/* /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/yarn && \
     adduser -S nodejs && \

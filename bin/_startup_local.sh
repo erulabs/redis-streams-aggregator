@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
+source ./bin/_variables.sh
 
 if ! [ -f "package.json" ]; then
   error "This script needs to be run from the root of the repository"
 fi
 
-PROJECT="RedisStreamsAggregator"
 NODE_ENV="development" yarn --no-progress --no-emoji --prefer-offline
 
 COMPOSE_CMD="docker-compose -p '${PROJECT}' up -d --remove-orphans redis"

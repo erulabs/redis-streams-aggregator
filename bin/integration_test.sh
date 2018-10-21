@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 set -e
+source ./bin/_variables.sh
 source ./bin/_startup_local.sh
-
-TARGET="${1:-local}"
-TEST_TARGET="${2:-index.js}"
-PROJECT="RedisStreamsAggregator"
-
-if [[ ! -d test/integration/${TEST_TARGET} && ! -f test/integration/${TEST_TARGET} ]]; then
-  echo "no test named '${TEST_TARGET}'"
-  exit 1
-fi
 
 # Generate TAG from git commit
 if [ -z "${TAG}" ]; then
@@ -19,19 +11,19 @@ fi
 
 echo "${DOCKER_SRV}:${REDIS_PORT}"
 
-if [ "${3}" == "--compose-link" ]; then
+if [ "${1}" == "--compose-link" ]; then
   echo "Deploying local integration test container, linking via compose"
   docker run --rm -it \
     --name ${PROJECT}_integration \
     --network ${PROJECT}_default \
     -e "REDIS_URI=redis:6379" \
-    redisstreamsaggregator \
-    ./node_modules/.bin/mocha test/integration/${TEST_TARGET}
+    ${PROJECT} \
+    ./node_modules/.bin/mocha test/integration
 elif [ "${TARGET}" == "local" ]; then
   . ./bin/_find_compose_services.sh
   REDIS_URI="${DOCKER_SRV}:${REDIS_PORT}" \
   RSA_DEBUG="true" \
-  ./node_modules/.bin/mocha test/integration/${TEST_TARGET}
+  ./node_modules/.bin/mocha test/integration
 else
   echo "not supported yet"
   exit 0

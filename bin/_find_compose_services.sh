@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
+source ./bin/_variables.sh
 
 # Super basic service discovery!
-# If you're using docker-machine, override host and dockerhost addresses
-DOCKER_SRV="localhost"
-DOCKER_MACHINE_HOST=$(docker-machine ip 2> /dev/null || echo "noDockerMachine")
-if [ "${DOCKER_MACHINE_HOST}" != "noDockerMachine" ]; then
-  DOCKER_SRV=${DOCKER_MACHINE_HOST}
-fi
 
 # getPort returns the dynamically allocated port that docker assigned to a container
 # this means the port the service runs on will differ between installations
@@ -15,7 +10,7 @@ fi
 
 # getPort $containerName $containerPort
 function getPort {
-  docker inspect --format="{{(index (index .NetworkSettings.Ports \"${2}\") 0).HostPort}}" redisstreamsaggregator_${1}_1
+  docker inspect --format="{{(index (index .NetworkSettings.Ports \"${2}\") 0).HostPort}}" ${PROJECT}_${1}_1
 }
 
 REDIS_PORT="$(getPort redis 6379/tcp)"
