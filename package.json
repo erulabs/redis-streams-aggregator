@@ -1,0 +1,26 @@
+{
+  "name": "redis-streams-aggregator",
+  "version": "1.0.0",
+  "description": "Aggregate redis streams connections, powered by ioredis",
+  "main": "index.js",
+  "repository": "https://github.com/erulabs/redis-streams-aggregator",
+  "author": "erulabs <seandon.mooy@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ioredis": "^4.2.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.7.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-flowtype": "^3.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  },
+  "prettier": {
+    "printWidth": 100
+  }
+}
