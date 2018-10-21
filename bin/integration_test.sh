@@ -25,7 +25,7 @@ if [ "${3}" == "--compose-link" ]; then
     --name ${PROJECT}_integration \
     --network ${PROJECT}_default \
     -e "REDIS_URI=redis:6379" \
-    ${DOCKER_CONTAINER_NAME}:${TAG} \
+    redisstreamsaggregator \
     ./node_modules/.bin/mocha test/integration/${TEST_TARGET}
 elif [ "${TARGET}" == "local" ]; then
   . ./bin/_find_compose_services.sh

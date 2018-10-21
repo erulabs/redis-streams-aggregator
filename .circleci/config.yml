@@ -1,0 +1,42 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: erulabs/circleci-builder:latest
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          reusable: true
+          exclusive: false
+          version: 17.06.1-ce
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ arch }}-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Building
+          command: yarn
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ arch }}-{{ checksum "yarn.lock" }}
+
+      # Test wrapper - all unit / static / lint tests should occur here
+      - run:
+          name: Linting & Unit testing...
+          command: |
+            ./bin/lint.sh
+            ./bin/unit_test.sh
+            ./node_modules/.bin/snyk test
+            docker build -t redisstreamsaggregator:latest .
+            ./bin/integration_test.sh --compose-link
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build

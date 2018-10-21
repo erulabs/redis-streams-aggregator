@@ -39,13 +39,13 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   const r = `${Math.floor(Math.random() * 10000000)}`
   const readName = `read:${r}`
   const writeName = `write:${r}`
-  logger('RedisStreamsAggregator:', { readName, writeName, options })
   this.handles = {
     read: new Redis(Object.assign(this.options, { connectionName: readName })),
     write: new Redis(Object.assign(this.options, { connectionName: writeName })),
     readName,
     writeName
   }
+  logger('RedisStreamsAggregator()', { readName, writeName })
 
   // We need to retrieve the read connections "client id" so that we can call CLIENT UNBLOCK on it later
   const getReadClientId = () => {
@@ -53,7 +53,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       this.handles.read.client('id').then(id => {
         this.readId = id
         this.events.emit('ready')
-        logger('Setting readId', { id })
       })
     }
   }
@@ -86,7 +85,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
     if (typeof this.readId !== 'number') return
     if (!this.subscriptions[id]) {
       this.subscriptions[id] = [1, offset]
-      logger('Added subscription', { id, data: [1, offset] })
       this.readStream()
     } else {
       this.subscriptions[id][0] += 1
@@ -95,7 +93,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   }
 
   this.add = function (id /*: string */, type /*: string */, content /*: Object */, msgId = '*') {
-    if (!this.connected) return
+    if (typeof this.readId !== 'number') return
     const body = typeof content === 'object' ? this.options.serialize(content) : content
     return this.handles.write.xadd(id, msgId, type, body)
   }
@@ -125,7 +123,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       ...streamOffsets
     )
     this.readStreamActive = false
-    if (!this.connected) return
+    if (typeof this.readId !== 'number') return
     if (messages) {
       for (let i = 0; i < messages.length; i++) {
         const newEventId = messages[i][0]

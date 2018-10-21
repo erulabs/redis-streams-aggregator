@@ -31,9 +31,7 @@ describe('RedisStreamsAggregator', function () {
   const testSubFunction = messages => {}
   describe(`.subscribe()`, function () {
     it('Allows a subsciptions to redis streams', function () {
-      console.log('a', instance.subscriptions['testId'])
       instance.subscribe('testId', '0', testSubFunction)
-      console.log('b', instance.subscriptions['testId'])
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(1)
       expect(instance.subscriptions['testId']).to.deep.equal([1, '0'])
     })
@@ -52,7 +50,7 @@ describe('RedisStreamsAggregator', function () {
       expect(Array.isArray(messages[0][1]), 'Array.isArray(messages[0][1])').to.equal(true)
     }
 
-    it('Adds events and gets them via subscriptions', async function (done) {
+    it('Adds events and gets them via subscriptions', function (done) {
       const testObj = { foo: 'bar' }
       const testSubFunction2 = messages => {
         isMessagesWellFormed(messages)
@@ -65,7 +63,9 @@ describe('RedisStreamsAggregator', function () {
         done()
       }
       instance.subscribe('testId2', '0', testSubFunction2)
-      await instance.add('testId2', 'ADD_TEST', testObj)
+      instance.add('testId2', 'ADD_TEST', testObj).then(newOffset => {
+        expect(newOffset, 'newOffset').to.be.a('string') // 1540154781259-0
+      })
     })
 
     it('Can subscribe to many streams', async function () {
@@ -94,7 +94,7 @@ describe('RedisStreamsAggregator', function () {
       await instance.add('testId3', 'testId3DATA', { blgeh: 'bar' })
     })
   })
-  describe(`.disconnect()`, async function () {
+  describe(`.disconnect()`, function () {
     it('disconnects from redis', async function () {
       await instance.disconnect()
       expect(instance.readId).to.equal(false)
