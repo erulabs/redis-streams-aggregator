@@ -2,8 +2,9 @@
 
 /* flow-include
 type optionsObjectOrString = string|{
-  hosts: Array<string>,
-  autoConnect?: boolean
+  host?: string,
+  port?: number,
+  lazyConnect?: boolean
 }
 */
 
@@ -11,7 +12,7 @@ const Redis = require('ioredis')
 const EventEmitter = require('events')
 
 const defaultOptions = {
-  autoConnect: true,
+  lazyConnect: false,
   serialize: JSON.stringify,
   unserialize: JSON.parse,
   // Amount of time to wait on XREAD - ideally we call client UNBLOCK on-demand, so this tunable shouldn't really matter much
@@ -20,7 +21,7 @@ const defaultOptions = {
 
 // $FlowIssue (logger takes any number of arguments)
 function logger () {
-  if (process.env.RSA_DEBUG === 'true') console.log.apply(this, arguments)
+  if (process.env.RSA_DEBUG === 'true') console.log.apply(console, arguments) // eslint-disable-line
 }
 
 function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
@@ -31,14 +32,14 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   this.events = new EventEmitter()
   this.on = this.events.on
   // Default options
-  if (typeof options === 'string') options = { hosts: options.split(',') }
+  if (typeof options === 'string') options = { host: options }
   this.options = Object.assign({}, defaultOptions, options)
 
   // Create redis read & write handles with debugable connection names
   const r = `${Math.floor(Math.random() * 10000000)}`
   const readName = `read:${r}`
   const writeName = `write:${r}`
-  logger('RedisStreamsAggregator:', { readName, writeName })
+  logger('RedisStreamsAggregator:', { readName, writeName, options })
   this.handles = {
     read: new Redis(Object.assign(this.options, { connectionName: readName })),
     write: new Redis(Object.assign(this.options, { connectionName: writeName })),
@@ -48,22 +49,22 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
 
   // We need to retrieve the read connections "client id" so that we can call CLIENT UNBLOCK on it later
   const getReadClientId = () => {
-    if (!this.handles.read.connected || !this.handles.write.connected) return
-    this.handles.read.client('id').then(id => {
-      this.readId = id
-      this.events.emit('ready')
-    })
+    if (this.handles.read.status === 'connect' && this.handles.write.status === 'connect') {
+      this.handles.read.client('id').then(id => {
+        this.readId = id
+        this.events.emit('ready')
+        logger('Setting readId', { id })
+      })
+    }
   }
 
   this.handles.write.on('connect', getReadClientId)
   this.handles.read.on('connect', getReadClientId)
-  if (options.autoConnect) this.connect()
 
   // Class methods below
   this.connect = function () {
-    // Autoconnect has already been passed to redis here, so no need to re-call connect
-    if (!options.autoConnect) this.handles.read.connect()
-    if (!options.autoConnect) this.handles.write.connect()
+    if (!this.handles.read.connected) this.handles.read.connect()
+    if (!this.handles.write.connected) this.handles.write.connect()
   }
 
   this.disconnect = function () {
@@ -85,13 +86,12 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
     if (typeof this.readId !== 'number') return
     if (!this.subscriptions[id]) {
       this.subscriptions[id] = [1, offset]
+      logger('Added subscription', { id, data: [1, offset] })
       this.readStream()
     } else {
       this.subscriptions[id][0] += 1
     }
-    this.redisEventEmitter.on(id, onEvent)
-
-    return this
+    this.events.on(id, onEvent)
   }
 
   this.add = function (id /*: string */, type /*: string */, content /*: Object */, msgId = '*') {
@@ -136,7 +136,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
             return r
           })
           this.subscriptions[newEventId].offset = eventMessages[eventMessages.length - 1][0]
-          this.redisEventEmitter.emit(newEventId, eventMessages)
+          this.events.emit(newEventId, eventMessages)
         }
       }
     }

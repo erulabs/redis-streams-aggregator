@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
 # Super basic service discovery!
+# If you're using docker-machine, override host and dockerhost addresses
+DOCKER_SRV="localhost"
+DOCKER_MACHINE_HOST=$(docker-machine ip 2> /dev/null || echo "noDockerMachine")
+if [ "${DOCKER_MACHINE_HOST}" != "noDockerMachine" ]; then
+  DOCKER_SRV=${DOCKER_MACHINE_HOST}
+fi
 
 # getPort returns the dynamically allocated port that docker assigned to a container
 # this means the port the service runs on will differ between installations

@@ -9,51 +9,50 @@ const chai = require('chai')
 const expect = chai.expect
 
 const RedisStreamsAggregator = require('../../index.js')
+const redisUri = (process.env.REDIS_URI || 'redis:6379').split(':')
 
 let instance
-describe('RedisStreamsAggregator', () => {
-  describe(`new RedisStreamsAggregator()`, () => {
-    it('Creates without connecting', () => {
+describe('RedisStreamsAggregator', function () {
+  describe(`new RedisStreamsAggregator()`, function () {
+    it('Creates and connects', function (done) {
+      this.timeout(15000)
       instance = new RedisStreamsAggregator({
-        hosts: [process.env.REDIS_URIS || 'redis:6379'],
-        autoConnect: false
+        host: redisUri[0],
+        port: parseInt(redisUri[1], 10)
       })
-      expect(instance.subscriptions, '.subscriptions').to.exist
-    })
-  })
-  describe(`.connect()`, () => {
-    it('Connects to redis', async () => {
-      await instance.connect()
-      expect(instance.handles.read).to.exist
-      expect(instance.handles.write).to.exist
+      instance.events.on('ready', () => {
+        expect(instance.subscriptions, '.subscriptions').to.exist
+        expect(instance.handles.read).to.exist
+        expect(instance.handles.write).to.exist
+        done()
+      })
     })
   })
   const testSubFunction = messages => {}
-  describe(`.subscribe()`, () => {
-    it('Allows a subsciptions to redis streams', async () => {
+  describe(`.subscribe()`, function () {
+    it('Allows a subsciptions to redis streams', function () {
+      console.log('a', instance.subscriptions['testId'])
       instance.subscribe('testId', '0', testSubFunction)
+      console.log('b', instance.subscriptions['testId'])
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(1)
-      expect(instance.subscriptions['testId']).to.deep.equal({
-        subscribers: 1,
-        offset: '0'
-      })
+      expect(instance.subscriptions['testId']).to.deep.equal([1, '0'])
     })
   })
-  describe(`.unsubscribe()`, () => {
-    it('Removes subsciptions from redis streams', () => {
+  describe(`.unsubscribe()`, function () {
+    it('Removes subsciptions from redis streams', function () {
       instance.unsubscribe('testId', testSubFunction)
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(0)
       expect(instance.subscriptions['testId']).to.not.exist
     })
   })
-  describe(`.add()`, () => {
+  describe(`.add()`, function () {
     function isMessagesWellFormed (messages) {
       expect(Array.isArray(messages), 'Array.isArray(messages)').to.equal(true)
       expect(Array.isArray(messages[0]), 'Array.isArray(messages[0])').to.equal(true)
       expect(Array.isArray(messages[0][1]), 'Array.isArray(messages[0][1])').to.equal(true)
     }
 
-    it('Adds events and gets them via subscriptions', done => {
+    it('Adds events and gets them via subscriptions', async function (done) {
       const testObj = { foo: 'bar' }
       const testSubFunction2 = messages => {
         isMessagesWellFormed(messages)
@@ -65,10 +64,11 @@ describe('RedisStreamsAggregator', () => {
         instance.unsubscribe('testId2', testSubFunction)
         done()
       }
-      instance.subscribe('testId2', '0', testSubFunction2).add('testId2', 'ADD_TEST', testObj)
+      instance.subscribe('testId2', '0', testSubFunction2)
+      await instance.add('testId2', 'ADD_TEST', testObj)
     })
 
-    it('Can subscribe to many streams', async () => {
+    it('Can subscribe to many streams', async function () {
       let messages3
       let messages4
       const testFunc3 = msgs => {
@@ -89,14 +89,13 @@ describe('RedisStreamsAggregator', () => {
         instance.unsubscribe('testId3', testSubFunction)
         instance.unsubscribe('testId4', testSubFunction)
       }
-      await instance
-        .subscribe('testId3', '0', testFunc3)
-        .subscribe('testId4', '0', testFunc4)
-        .add('testId3', 'testId3DATA', { blgeh: 'bar' })
+      instance.subscribe('testId3', '0', testFunc3)
+      instance.subscribe('testId4', '0', testFunc4)
+      await instance.add('testId3', 'testId3DATA', { blgeh: 'bar' })
     })
   })
-  describe(`.disconnect()`, async () => {
-    it('disconnects from redis', async () => {
+  describe(`.disconnect()`, async function () {
+    it('disconnects from redis', async function () {
       await instance.disconnect()
       expect(instance.readId).to.equal(false)
     }).timeout(60000)

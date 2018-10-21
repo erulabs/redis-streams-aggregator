@@ -17,17 +17,20 @@ if [ -z "${TAG}" ]; then
   TAG=$(echo $COMMIT_HASH | cut -c1-7)
 fi
 
+echo "${DOCKER_SRV}:${REDIS_PORT}"
+
 if [ "${3}" == "--compose-link" ]; then
   echo "Deploying local integration test container, linking via compose"
   docker run --rm -it \
     --name ${PROJECT}_integration \
     --network ${PROJECT}_default \
-    -e "REDIS_URIS=redis:6379" \
+    -e "REDIS_URI=redis:6379" \
     ${DOCKER_CONTAINER_NAME}:${TAG} \
     ./node_modules/.bin/mocha test/integration/${TEST_TARGET}
 elif [ "${TARGET}" == "local" ]; then
   . ./bin/_find_compose_services.sh
-  REDIS_URIS="${DOCKER_SRV}:${REDIS_PORT}" \
+  REDIS_URI="${DOCKER_SRV}:${REDIS_PORT}" \
+  RSA_DEBUG="true" \
   ./node_modules/.bin/mocha test/integration/${TEST_TARGET}
 else
   echo "not supported yet"
