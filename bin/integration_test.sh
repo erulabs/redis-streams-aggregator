@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -e
+source ./bin/_startup_local.sh
 
 TARGET="${1:-local}"
 TEST_TARGET="${2:-index.js}"
+PROJECT="RedisStreamsAggregator"
 
 if [[ ! -d test/integration/${TEST_TARGET} && ! -f test/integration/${TEST_TARGET} ]]; then
   echo "no test named '${TEST_TARGET}'"

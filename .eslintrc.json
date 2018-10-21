@@ -1,3 +1,16 @@
 {
-  "extends": ["standard", "plugin:flowtype/recommended"]
+  "parser": "babel-eslint",
+  "extends": ["standard", "plugin:flowtype/recommended"],
+  "rules": {
+    "flowtype/require-valid-file-annotation": [2, "always"],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": [2, { "vars": "all", "args": "none" }],
+    "standard/computed-property-even-spacing": 0,
+    "no-unused-expressions": 0
+  },
+  "plugins": ["flowtype"],
+  "globals": {
+    "describe": true,
+    "it": true
+  }
 }

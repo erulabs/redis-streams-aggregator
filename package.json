@@ -20,9 +20,10 @@
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
+    "flow-bin": "^0.83.0",
     "mocha": "^5.2.0"
   },
   "prettier": {
-    "printWidth": 100
+    "printWidth": 120
   }
 }

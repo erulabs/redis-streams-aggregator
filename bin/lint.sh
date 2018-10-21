@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-source ./bin/_variables.sh
-
 set -e
 
 echo -e "\nESLINT (src):"
-./node_modules/.bin/eslint src
+./node_modules/.bin/eslint index.js
 
-echo -e "\nESLINT (service):"
-./node_modules/.bin/eslint service
+echo -e "\nESLINT (test):"
+./node_modules/.bin/eslint test
 
 echo -e "\nFlow:"
 ./node_modules/.bin/flow check
