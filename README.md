@@ -55,8 +55,7 @@ socket.add('testChannel', 'TEST_MESSAGE', { foo: 'bar' })
 
 socket.subscribe('testChannel', '*', messages => {
   // messages === [
-  //  {
-  //    offset: "1518951480106-0",
+  //  { offset: "1518951480106-0",
   //    TEST_MESSAGE: { foo: 'bar' } }
   // ]
 })
@@ -75,11 +74,13 @@ Where "options" is an object with the following properties:
 | `serialize`   |    no    | `JSON.stringify`   | A function for encoding published objects |
 | `unserialize` |    no    | `JSON.parse`       | A function for decoding published objects |
 
-```js
-const server = new RedisStreamsAggregator({ host: '192.168.0.1', port: 6379 })
-```
 
-If the "options" argument is a string, or an array of strings, it is assumed to be the `targets` option.
+```js
+const server = new RedisStreamsAggregator({
+  host: '192.168.0.1',
+  port: 6379
+})
+```
 
 ### Server Events
 
