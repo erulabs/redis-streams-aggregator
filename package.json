@@ -1,11 +1,12 @@
 {
   "name": "redis-streams-aggregator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Aggregate redis streams connections, powered by ioredis",
   "main": "index.js",
   "repository": "https://github.com/erulabs/redis-streams-aggregator",
   "author": "erulabs <seandon.mooy@gmail.com>",
   "license": "MIT",
+  "donate": "https://givethanks.app/u/erulabs",
   "dependencies": {
     "ioredis": "^4.2.0"
   },
