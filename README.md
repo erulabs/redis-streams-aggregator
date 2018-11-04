@@ -30,7 +30,7 @@ streams.subscribe('testId', messages => {
 })
 
 // Write data to a stream (very thin wrapper around XADD)
-streams.add('testId', 'KEY', { value: 'foobar' })
+streams.add('testId', { value: 'foobar' })
 ```
 
 ## API Documentation
@@ -51,12 +51,11 @@ For example, consider the following:
 
 ```js
 // Server
-streams.add('testChannel', 'TEST_MESSAGE', { foo: 'bar' })
+streams.add('testChannel', { foo: 'bar' })
 
 streams.subscribe('testChannel', '*', messages => {
   // messages === [
-  //  { offset: "1518951480106-0",
-  //    TEST_MESSAGE: { foo: 'bar' } }
+  //  [ "1518951480106-0", { foo: 'bar' } ]
   // ]
 })
 ```
