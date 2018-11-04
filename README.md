@@ -5,7 +5,7 @@
 
   A connection collapser and toolkit built around Redis5's XADD and XREAD commands, powered by ioredis
   <br /><br />
-  <a href="https://npm.runkit.com/redis-streams-aggregator"><img src="https://img.shields.io/npm/v/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<a href="https://circleci.com/gh/erulabs/redis-streams-aggregator"><img src="https://img.shields.io/circleci/project/github/erulabs/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<img src="https://img.shields.io/npm/l/redis-streams-aggregator.svg?style=for-the-badge" />
+  <a href="https://npm.runkit.com/redis-streams-aggregator"><img src="https://img.shields.io/npm/v/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<a href="https://circleci.com/gh/erulabs/redis-streams-aggregator"><img src="https://img.shields.io/circleci/project/github/erulabs/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<img src="https://img.shields.io/npm/l/redis-streams-aggregator.svg?style=for-the-badge" /><a href="https://givethanks.app/npm/redis-streams-aggregator"><img src="https://img.shields.io/badge/donate-givethanks-green.svg?style=for-the-badge" /></a>
   <br /><br />
 </div>
 
