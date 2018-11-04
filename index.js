@@ -115,11 +115,13 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       streamOffsets.push(this.subscriptions[id][1])
     }
     if (streamIds.length < 1) return
+    logger('XREAD', ['BLOCK', this.options.blockingInterval, 'STREAMS', ...streamIds, ...streamOffsets])
     const messages = await this.handles.read.xread(
       'BLOCK',
       this.options.blockingInterval,
       'STREAMS',
       ...streamIds,
+      'ID',
       ...streamOffsets
     )
     this.readStreamActive = false

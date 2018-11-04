@@ -3,7 +3,7 @@
   <br />
   <h2>Redis Streams Aggregator</h2>
 
-  A connection collapser and toolkit build around Redis5's XADD and XREAD commands, powered by ioredis
+  A connection collapser and toolkit built around Redis5's XADD and XREAD commands, powered by ioredis
   <br /><br />
   <a href="https://npm.runkit.com/redis-streams-aggregator"><img src="https://img.shields.io/npm/v/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<a href="https://circleci.com/gh/erulabs/redis-streams-aggregator"><img src="https://img.shields.io/circleci/project/github/erulabs/redis-streams-aggregator.svg?style=for-the-badge" /></a>&nbsp;<img src="https://img.shields.io/npm/l/redis-streams-aggregator.svg?style=for-the-badge" />
   <br /><br />
@@ -51,9 +51,9 @@ For example, consider the following:
 
 ```js
 // Server
-socket.add('testChannel', 'TEST_MESSAGE', { foo: 'bar' })
+streams.add('testChannel', 'TEST_MESSAGE', { foo: 'bar' })
 
-socket.subscribe('testChannel', '*', messages => {
+streams.subscribe('testChannel', '*', messages => {
   // messages === [
   //  { offset: "1518951480106-0",
   //    TEST_MESSAGE: { foo: 'bar' } }
