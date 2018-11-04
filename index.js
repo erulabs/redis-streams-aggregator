@@ -16,7 +16,8 @@ const defaultOptions = {
   serialize: JSON.stringify,
   unserialize: JSON.parse,
   // Amount of time to wait on XREAD - ideally we call client UNBLOCK on-demand, so this tunable shouldn't really matter much
-  blockingInterval: 5000
+  blockingInterval: 10000,
+  redisOptions: { showFriendlyErrorStack: true }
 }
 
 // $FlowIssue (logger takes any number of arguments)
@@ -45,7 +46,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
     readName,
     writeName
   }
-  logger('RedisStreamsAggregator()', { readName, writeName })
+  logger('RedisStreamsAggregator()', { ...this.options, readName, writeName })
 
   // We need to retrieve the read connections "client id" so that we can call CLIENT UNBLOCK on it later
   const getReadClientId = () => {
@@ -60,16 +61,30 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   this.handles.write.on('connect', getReadClientId)
   this.handles.read.on('connect', getReadClientId)
 
+  this.handles.write.on('error', err => console.log('write', err))
+  this.handles.read.on('error', err => console.log('read', err))
+
   // Class methods below
   this.connect = function () {
-    if (!this.handles.read.connected) this.handles.read.connect()
-    if (!this.handles.write.connected) this.handles.write.connect()
+    try {
+      if (!this.handles.read.connected) this.handles.read.connect()
+      if (!this.handles.write.connected) this.handles.write.connect()
+    } catch (err) {
+      console.log('asdasd', err)
+    }
   }
 
   this.disconnect = function () {
-    this.readId = false
-    this.events.removeAllListeners()
-    return Promise.all([this.handles.read.disconnect(), this.handles.write.disconnect()])
+    return new Promise(async (resolve, reject) => {
+      this.events.removeAllListeners()
+      await this.unblock()
+      this.readId = false
+      this.handles.read.on('end', async () => {
+        await this.handles.write.disconnect()
+      })
+      this.handles.write.on('end', () => resolve())
+      await this.handles.read.disconnect()
+    })
   }
 
   this.unsubscribe = function (id /*: string */, onEvent /*: Function */) {
@@ -92,15 +107,16 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
     this.events.on(id, onEvent)
   }
 
-  this.add = function (id /*: string */, type /*: string */, content /*: Object */, msgId = '*') {
+  this.add = function (id /*: string */, content /*: Object */, msgId = '*') {
     if (typeof this.readId !== 'number') return
     const body = typeof content === 'object' ? this.options.serialize(content) : content
-    return this.handles.write.xadd(id, msgId, type, body)
+    return this.handles.write.xadd(id, msgId, 's', body)
   }
 
   this.unblock = function () {
-    if (!this.readStreamActive) return
-    this.handles.write.client('unblock', this.readId).then(() => (this.readStreamActive = false))
+    if (typeof this.readId !== 'number') return
+    this.readStreamActive = false
+    return this.handles.write.client('unblock', this.readId)
   }
 
   this.readStream = async function () {
@@ -115,13 +131,11 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       streamOffsets.push(this.subscriptions[id][1])
     }
     if (streamIds.length < 1) return
-    logger('XREAD', ['BLOCK', this.options.blockingInterval, 'STREAMS', ...streamIds, ...streamOffsets])
     const messages = await this.handles.read.xread(
       'BLOCK',
       this.options.blockingInterval,
       'STREAMS',
       ...streamIds,
-      'ID',
       ...streamOffsets
     )
     this.readStreamActive = false
@@ -132,7 +146,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
         if (this.subscriptions[newEventId]) {
           const eventMessagesRaw = messages[i][1]
           const eventMessages = eventMessagesRaw.map(r => {
-            r[1][1] = this.options.unserialize(r[1][1])
+            r[1] = this.options.unserialize(r[1][1])
             return r
           })
           this.subscriptions[newEventId].offset = eventMessages[eventMessages.length - 1][0]

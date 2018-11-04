@@ -19,9 +19,10 @@ if [ "${1}" == "--compose-link" ]; then
     -e "REDIS_URI=redis:6379" \
     ${PROJECT} \
     ./node_modules/.bin/mocha test/integration
-elif [ "${TARGET}" == "local" ]; then
+elif [ "${TARGET:=local}" == "local" ]; then
   . ./bin/_find_compose_services.sh
   REDIS_URI="${DOCKER_SRV}:${REDIS_PORT}" \
+  DEBUG="ioredis:*" \
   RSA_DEBUG="true" \
   ./node_modules/.bin/mocha test/integration
 else

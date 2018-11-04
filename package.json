@@ -26,5 +26,8 @@
   },
   "prettier": {
     "printWidth": 120
+  },
+  "optionalDependencies": {
+    "hiredis": "^0.5.0"
   }
 }
