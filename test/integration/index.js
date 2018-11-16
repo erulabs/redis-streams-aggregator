@@ -33,15 +33,15 @@ describe('RedisStreamsAggregator', function () {
   })
   const testSubFunction = messages => {}
   describe(`.subscribe()`, function () {
-    it('Allows a subsciptions to redis streams', function () {
-      instance.subscribe('testId', '$', testSubFunction)
+    it('Allows a subsciptions to redis streams', async function () {
+      await instance.subscribe('testId', '$', testSubFunction)
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(1)
       expect(instance.subscriptions['testId']).to.deep.equal([1, '$'])
     })
   })
   describe(`.unsubscribe()`, function () {
-    it('Removes subsciptions from redis streams', function () {
-      instance.unsubscribe('testId', testSubFunction)
+    it('Removes subsciptions from redis streams', async function () {
+      await instance.unsubscribe('testId', testSubFunction)
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(0)
       expect(instance.subscriptions['testId']).to.not.exist
     })
@@ -55,16 +55,17 @@ describe('RedisStreamsAggregator', function () {
 
     it('Adds events and gets them via subscriptions', function (done) {
       const testObj = { foo: 'bar' }
-      const testSubFunction2 = messages => {
+      const testSubFunction2 = async messages => {
         isMessagesWellFormed(messages)
         expect(messages[0][0]).to.be.a('string')
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
-        instance.unsubscribe('testId2', testSubFunction)
+        await instance.unsubscribe('testId2', testSubFunction)
         done()
       }
-      instance.subscribe('testId2', '0', testSubFunction2)
-      instance.add('testId2', testObj).then(newOffset => {
-        expect(newOffset, 'newOffset').to.be.a('string') // 1540154781259-0
+      instance.subscribe('testId2', '0', testSubFunction2).then(() => {
+        instance.add('testId2', testObj).then(newOffset => {
+          expect(newOffset, 'newOffset').to.be.a('string') // 1540154781259-0
+        })
       })
     })
 
@@ -86,11 +87,11 @@ describe('RedisStreamsAggregator', function () {
         await instance.add('testId4', { blgeh: 'bar' })
         isMessagesWellFormed(messages4)
 
-        instance.unsubscribe('testId3', testSubFunction)
-        instance.unsubscribe('testId4', testSubFunction)
+        await instance.unsubscribe('testId3', testSubFunction)
+        await instance.unsubscribe('testId4', testSubFunction)
       }
-      instance.subscribe('testId3', '$', testFunc3)
-      instance.subscribe('testId4', '$', testFunc4)
+      await instance.subscribe('testId3', '$', testFunc3)
+      await instance.subscribe('testId4', '$', testFunc4)
       await instance.add('testId3', { blgeh: 'bar' })
     })
   })
