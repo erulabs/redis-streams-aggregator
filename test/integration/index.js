@@ -10,10 +10,16 @@ const expect = chai.expect
 
 const RedisStreamsAggregator = require('../../index.js')
 const redisUri = (process.env.REDIS_URI || 'redis:6379').split(':')
-const blockingInterval = 10000
+const blockingInterval = 1000
 
 let instance
 describe('RedisStreamsAggregator', function () {
+  function isMessagesWellFormed (messages) {
+    expect(Array.isArray(messages), 'Array.isArray(messages)').to.equal(true)
+    expect(Array.isArray(messages[0]), 'Array.isArray(messages[0])').to.equal(true)
+    expect(messages[0][1]).to.be.a('object')
+  }
+
   describe(`new RedisStreamsAggregator()`, function () {
     it('Creates and connects', function (done) {
       this.timeout(15000)
@@ -38,6 +44,21 @@ describe('RedisStreamsAggregator', function () {
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(1)
       expect(instance.subscriptions['testId']).to.deep.equal([1, '$'])
     })
+
+    it('continues reading after a BLOCK timeout with no messages', function (done) {
+      const testObj = { whatwhat: 'keepReading' }
+      async function keepReadingMsg (messages) {
+        isMessagesWellFormed(messages)
+        expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
+        await instance.unblock()
+        await instance.unsubscribe('keepReading', keepReadingMsg)
+        done()
+      }
+      instance.subscribe('keepReading', '$', keepReadingMsg)
+      setTimeout(() => {
+        instance.add('keepReading', testObj)
+      }, Math.floor(blockingInterval * 1.5))
+    }).timeout(blockingInterval * 2)
   })
   describe(`.unsubscribe()`, function () {
     it('Removes subsciptions from redis streams', async function () {
@@ -47,12 +68,6 @@ describe('RedisStreamsAggregator', function () {
     })
   })
   describe(`.add()`, function () {
-    function isMessagesWellFormed (messages) {
-      expect(Array.isArray(messages), 'Array.isArray(messages)').to.equal(true)
-      expect(Array.isArray(messages[0]), 'Array.isArray(messages[0])').to.equal(true)
-      expect(messages[0][1]).to.be.a('object')
-    }
-
     it('Adds events and gets them via subscriptions', function (done) {
       const testObj = { foo: 'bar' }
       const testSubFunction2 = async messages => {
