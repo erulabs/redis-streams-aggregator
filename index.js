@@ -177,8 +177,8 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
           this.events.emit(newEventId, eventMessages)
         }
       }
-      await this.readStream()
     }
+    await this.readStream()
   }
 
   return this
