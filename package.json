@@ -1,6 +1,6 @@
 {
   "name": "redis-streams-aggregator",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Aggregate redis streams connections, powered by ioredis",
   "main": "index.js",
   "repository": "https://github.com/erulabs/redis-streams-aggregator",
