@@ -74,7 +74,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       const happyStates = ['connect', 'connecting', 'ready']
       const readConnecting = happyStates.includes(this.handles.read.status)
       const writeConnecting = happyStates.includes(this.handles.write.status)
-      // if (readConnecting && writeConnecting) return resolve()
       logger('Connecting', { readStatus: this.handles.read.status, writeStatus: this.handles.write.status })
 
       if (!writeConnecting) this.handles.write.connect()
