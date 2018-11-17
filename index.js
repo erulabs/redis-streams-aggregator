@@ -173,7 +173,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
             r[1] = this.options.unserialize(r[1][1])
             return r
           })
-          this.subscriptions[newEventId].offset = eventMessages[eventMessages.length - 1][0]
+          this.subscriptions[newEventId][1] = eventMessages[eventMessages.length - 1][0]
           this.events.emit(newEventId, eventMessages)
         }
       }

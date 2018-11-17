@@ -59,7 +59,8 @@ describe('RedisStreamsAggregator', function () {
         isMessagesWellFormed(messages)
         expect(messages[0][0]).to.be.a('string')
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
-        await instance.unsubscribe('testId2', testSubFunction)
+        expect(instance.subscriptions['testId2'][1]).to.not.equal('0')
+        await instance.unsubscribe('testId2', testSubFunction2)
         done()
       }
       instance.subscribe('testId2', '0', testSubFunction2).then(() => {
@@ -95,6 +96,7 @@ describe('RedisStreamsAggregator', function () {
       await instance.add('testId3', { blgeh: 'bar' })
     })
   })
+
   describe(`.disconnect()`, function () {
     it('disconnects from redis', async function () {
       await instance.disconnect()

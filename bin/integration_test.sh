@@ -22,8 +22,7 @@ if [ "${1}" == "--compose-link" ]; then
 elif [ "${TARGET:=local}" == "local" ]; then
   . ./bin/_find_compose_services.sh
   REDIS_URI="${DOCKER_SRV}:${REDIS_PORT}" \
-  DEBUG="ioredis:*" \
-  RSA_DEBUG="true" \
+  RSA_DEBUG="false" \
   ./node_modules/.bin/mocha test/integration
 else
   echo "not supported yet"
