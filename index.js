@@ -69,7 +69,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   // Class methods below
   this.connect = function () {
     return new Promise((resolve, reject) => {
-      if (this.calledDisconnect) resolve()
+      if (this.calledDisconnect || (this.handles.read.status === 'ready' && this.handles.write.status === 'ready')) resolve()
 
       const happyStates = ['connect', 'connecting', 'ready']
       const readConnecting = happyStates.includes(this.handles.read.status)
