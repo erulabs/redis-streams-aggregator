@@ -74,12 +74,11 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
       const happyStates = ['connect', 'connecting', 'ready']
       const readConnecting = happyStates.includes(this.handles.read.status)
       const writeConnecting = happyStates.includes(this.handles.write.status)
-      if (readConnecting && writeConnecting) return resolve()
+      // if (readConnecting && writeConnecting) return resolve()
       logger('Connecting', { readStatus: this.handles.read.status, writeStatus: this.handles.write.status })
 
       if (!writeConnecting) this.handles.write.connect()
       if (!readConnecting) this.handles.read.connect()
-
       this.events.on('ready', () => resolve())
     })
   }
@@ -111,6 +110,7 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   }
 
   this.subscribe = async function (id /*: string */, offset /*: string */, onEvent /*: Function */) {
+    logger('Pre-Subscribe', { subscriptions: this.subscriptions, id })
     await this.connect()
     if (!this.subscriptions[id]) {
       this.subscriptions[id] = [1, offset]
@@ -136,7 +136,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   }
 
   this.readStream = async function () {
-    await this.connect()
     if (typeof this.readId !== 'number') return
     if (this.readStreamActive) await this.unblock()
 
