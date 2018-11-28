@@ -69,7 +69,9 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   // Class methods below
   this.connect = function () {
     return new Promise((resolve, reject) => {
-      if (this.calledDisconnect || (this.handles.read.status === 'ready' && this.handles.write.status === 'ready')) resolve()
+      if (this.calledDisconnect || (this.handles.read.status === 'ready' && this.handles.write.status === 'ready')) {
+        return resolve()
+      }
 
       const happyStates = ['connect', 'connecting', 'ready']
       const readConnecting = happyStates.includes(this.handles.read.status)
@@ -78,6 +80,8 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
 
       if (!writeConnecting) this.handles.write.connect()
       if (!readConnecting) this.handles.read.connect()
+
+      // TODO: Bind errors and reject the connect promise
       this.events.on('ready', () => resolve())
     })
   }
