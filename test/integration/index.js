@@ -10,7 +10,7 @@ const expect = chai.expect
 
 const RedisStreamsAggregator = require('../../index.js')
 const redisUri = (process.env.REDIS_URI || 'redis:6379').split(':')
-const blockingInterval = 1000
+const blockingInterval = 100
 
 let instance
 describe('RedisStreamsAggregator', function () {
@@ -70,12 +70,15 @@ describe('RedisStreamsAggregator', function () {
   describe(`.add()`, function () {
     it('Adds events and gets them via subscriptions', function (done) {
       const testObj = { foo: 'bar' }
+      let callOnce = false
       const testSubFunction2 = async messages => {
         isMessagesWellFormed(messages)
         expect(messages[0][0]).to.be.a('string')
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
         expect(instance.subscriptions['testId2'][1]).to.not.equal('0')
         await instance.unsubscribe('testId2', testSubFunction2)
+        if (callOnce) return
+        callOnce = true
         done()
       }
       instance.subscribe('testId2', '0', testSubFunction2).then(() => {
