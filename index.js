@@ -103,7 +103,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   }
 
   this.unsubscribe = async function (id /*: string */, onEvent /*: Function */) {
-    await this.connect()
     if (!this.subscriptions[id]) return
     if (this.subscriptions[id][0] > 0) {
       this.events.removeListener(id, onEvent)
@@ -114,7 +113,6 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
 
   this.subscribe = async function (id /*: string */, offset /*: string */, onEvent /*: Function */) {
     logger('Pre-Subscribe', { subscriptions: this.subscriptions, id })
-    await this.connect()
     if (!this.subscriptions[id]) {
       this.subscriptions[id] = [1, offset]
       this.readStream()
@@ -125,14 +123,12 @@ function RedisStreamsAggregator (options /*: optionsObjectOrString */) {
   }
 
   this.add = async function (id /*: string */, content /*: Object */, msgId = '*') {
-    await this.connect()
     const body = typeof content === 'object' ? this.options.serialize(content) : content
     logger('XADD', [id, msgId, 's', body])
     return this.handles.write.xadd(id, msgId, 's', body)
   }
 
   this.unblock = async function () {
-    await this.connect()
     this.readStreamActive = false
     logger('unblocking', [this.readId])
     return this.handles.write.client('unblock', this.readId)
