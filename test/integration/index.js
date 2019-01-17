@@ -51,13 +51,14 @@ describe('RedisStreamsAggregator', function () {
         isMessagesWellFormed(messages)
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
         await instance.unblock()
-        await instance.unsubscribe('keepReading', keepReadingMsg)
+        instance.unsubscribe('keepReading', keepReadingMsg)
         done()
       }
-      instance.subscribe('keepReading', '$', keepReadingMsg)
-      setTimeout(() => {
-        instance.add('keepReading', testObj)
-      }, Math.floor(blockingInterval * 1.5))
+      instance.subscribe('keepReading', '$', keepReadingMsg).then(() => {
+        setTimeout(() => {
+          instance.add('keepReading', testObj)
+        }, Math.floor(blockingInterval * 1.5))
+      })
     }).timeout(blockingInterval * 2)
   })
   describe(`.unsubscribe()`, function () {
@@ -67,8 +68,12 @@ describe('RedisStreamsAggregator', function () {
       expect(instance.subscriptions['testId']).to.not.exist
     })
   })
-  describe(`.add()`, function () {
+  describe(`.add()`, function (done) {
     it('Adds events and gets them via subscriptions', function (done) {
+      let doneTwice = 0
+      function finish () {
+        if (++doneTwice === 2) done()
+      }
       const testObj = { foo: 'bar' }
       let callOnce = false
       const testSubFunction2 = async messages => {
@@ -76,43 +81,51 @@ describe('RedisStreamsAggregator', function () {
         expect(messages[0][0]).to.be.a('string')
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
         expect(instance.subscriptions['testId2'][1]).to.not.equal('0')
-        await instance.unsubscribe('testId2', testSubFunction2)
+        instance.unsubscribe('testId2', testSubFunction2)
         if (callOnce) return
         callOnce = true
-        done()
+        finish()
       }
       instance.subscribe('testId2', '0', testSubFunction2).then(() => {
         instance.add('testId2', testObj).then(newOffset => {
           expect(newOffset, 'newOffset').to.be.a('string') // 1540154781259-0
+          finish()
         })
       })
     })
 
-    it('Can subscribe to many streams', async function () {
+    it('Can subscribe to many streams', function (done) {
       let messages3
       let messages4
-      const testFunc3 = msgs => {
+      function testFunc3 (msgs) {
         messages3 = msgs
         if (messages3 && messages4) doTest()
       }
-      const testFunc4 = msgs => {
+      function testFunc4 (msgs) {
         messages4 = msgs
         if (messages3 && messages4) doTest()
       }
       const doTest = async () => {
         isMessagesWellFormed(messages3)
-        expect(messages4).to.equal(undefined)
-
-        await instance.add('testId4', { blgeh: 'bar' })
         isMessagesWellFormed(messages4)
+        let twoResponses = 0
+        await instance.subscribe('testId4', '$', msgs => {
+          if (++twoResponses === 2) done()
+        })
 
-        await instance.unsubscribe('testId3', testSubFunction)
-        await instance.unsubscribe('testId4', testSubFunction)
+        instance.unsubscribe('testId3', testFunc3)
+        instance.unsubscribe('testId4', testFunc4)
+        await instance.add('testId4', { final: 'foobar' })
       }
-      await instance.subscribe('testId3', '$', testFunc3)
-      await instance.subscribe('testId4', '$', testFunc4)
-      await instance.add('testId3', { blgeh: 'bar' })
-    })
+
+      Promise.all([instance.subscribe('testId3', '$', testFunc3), instance.subscribe('testId4', '$', testFunc4)]).then(
+        numSubscriptions => {
+          Promise.all([instance.add('testId3', { testId3: 1 }), instance.add('testId4', { testId4: 50 })]).then(
+            messages => {}
+          )
+        }
+      )
+    }).timeout(5000)
   })
 
   describe(`.disconnect()`, function () {
