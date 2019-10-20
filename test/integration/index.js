@@ -20,7 +20,7 @@ describe('RedisStreamsAggregator', function () {
     expect(messages[0][1]).to.be.a('object')
   }
 
-  describe(`new RedisStreamsAggregator()`, function () {
+  describe('new RedisStreamsAggregator()', function () {
     it('Creates and connects', function (done) {
       this.timeout(15000)
       instance = new RedisStreamsAggregator({
@@ -37,12 +37,12 @@ describe('RedisStreamsAggregator', function () {
       })
     })
   })
-  const testSubFunction = messages => {}
-  describe(`.subscribe()`, function () {
+  const testSubFunction = messages => { }
+  describe('.subscribe()', function () {
     it('Allows a subsciptions to redis streams', async function () {
       await instance.subscribe('testId', '$', testSubFunction)
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(1)
-      expect(instance.subscriptions['testId']).to.deep.equal([1, '$'])
+      expect(instance.subscriptions.testId).to.deep.equal([1, '$'])
     })
 
     it('continues reading after a BLOCK timeout with no messages', function (done) {
@@ -61,14 +61,14 @@ describe('RedisStreamsAggregator', function () {
       })
     }).timeout(blockingInterval * 2)
   })
-  describe(`.unsubscribe()`, function () {
+  describe('.unsubscribe()', function () {
     it('Removes subsciptions from redis streams', async function () {
       await instance.unsubscribe('testId', testSubFunction)
       expect(Object.keys(instance.subscriptions)).to.have.lengthOf(0)
-      expect(instance.subscriptions['testId']).to.not.exist
+      expect(instance.subscriptions.testId).to.not.exist
     })
   })
-  describe(`.add()`, function (done) {
+  describe('.add()', function (done) {
     it('Adds events and gets them via subscriptions', function (done) {
       let doneTwice = 0
       function finish () {
@@ -80,7 +80,7 @@ describe('RedisStreamsAggregator', function () {
         isMessagesWellFormed(messages)
         expect(messages[0][0]).to.be.a('string')
         expect(messages[0][1], 'messages[0][1][1]').to.deep.equal(testObj)
-        expect(instance.subscriptions['testId2'][1]).to.not.equal('0')
+        expect(instance.subscriptions.testId2[1]).to.not.equal('0')
         instance.unsubscribe('testId2', testSubFunction2)
         if (callOnce) return
         callOnce = true
@@ -121,14 +121,14 @@ describe('RedisStreamsAggregator', function () {
       Promise.all([instance.subscribe('testId3', '$', testFunc3), instance.subscribe('testId4', '$', testFunc4)]).then(
         numSubscriptions => {
           Promise.all([instance.add('testId3', { testId3: 1 }), instance.add('testId4', { testId4: 50 })]).then(
-            messages => {}
+            messages => { }
           )
         }
       )
     }).timeout(5000)
   })
 
-  describe(`.disconnect()`, function () {
+  describe('.disconnect()', function () {
     it('disconnects from redis', async function () {
       await instance.disconnect()
       expect(instance.readId).to.equal(false)

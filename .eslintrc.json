@@ -6,7 +6,8 @@
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-unused-vars": [2, { "vars": "all", "args": "none" }],
     "standard/computed-property-even-spacing": 0,
-    "no-unused-expressions": 0
+    "no-unused-expressions": 0,
+    "no-async-promise-executor": 0
   },
   "plugins": ["flowtype"],
   "globals": {
