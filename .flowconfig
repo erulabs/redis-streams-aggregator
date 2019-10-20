@@ -1,2 +1,10 @@
 [options]
 suppress_comment= \\(.\\|\n\\)*\\$FlowIssue
+esproposal.class_instance_fields=enable
+module.ignore_non_literal_requires=true
+
+[lints]
+deprecated-utility=off
+
+[ignore]
+.*/node_modules/@snyk/composer-lockfile-parser/.*

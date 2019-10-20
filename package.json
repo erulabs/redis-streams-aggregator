@@ -8,22 +8,21 @@
   "license": "MIT",
   "donate": "https://givethanks.app/u/erulabs",
   "dependencies": {
-    "ioredis": "^4.3.0"
+    "ioredis": "^4.14.1"
   },
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.3",
     "chai": "^4.2.0",
-    "eslint": "^5.9.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-loader": "^2.1.1",
-    "eslint-plugin-flowtype": "^3.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^8.0.0",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "flow-bin": "^0.86.0",
-    "mocha": "^5.2.0",
-    "snyk": "^1.108.2"
+    "eslint": "^6.5.1",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-flowtype": "^4.3.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "flow-bin": "^0.109.0",
+    "mocha": "^6.2.2",
+    "snyk": "^1.236.1"
   },
   "prettier": {
     "printWidth": 120
